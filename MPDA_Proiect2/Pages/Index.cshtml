@@ -1,0 +1,197 @@
+﻿@page
+@model IndexModel
+
+
+@if (Model.Players.All(p => p.Health <= 0))
+{
+    <h2 style="color: red;">Defeat</h2>
+}
+@if (Model.Enemies.All(e => e.Health <= 0))
+{
+    <h2 style="color: green;">Victory</h2>
+}
+
+<form method="post">
+    <label>Choose Area:</label>
+    <select name="Area">
+        <option value="Forest">Forest</option>
+        <option value="Cave">Cave</option>
+    </select>
+    <button type="submit" name="selectArea" value="1">Start Battle</button>
+</form>
+
+<div class="battle-container">
+    <div class="battle-left">
+        <div class="side">
+            @for (int i = 0; i < Model.Players.Count; i++)
+            {
+                var player = Model.Players[i];
+                bool hasActed = Model.PlayersActed.Contains(i);
+                bool isAlive = player.Health > 0;
+
+                <div class="character-card">
+                    <img src="@player.ImagePath" alt="@player.Name" width="50" height="50" />
+
+                    <div class="character-info">
+                        <strong>@player.Name</strong>
+                        <span>HP: @player.Health</span>
+                        <span>Mana: @player.Mana</span>
+
+                        @if (!Model.IsBattleOver && isAlive && !hasActed)
+                        {
+                            <form method="post" style="display: flex; align-items: center; gap: 1em;">
+                                <input type="hidden" name="PlayerIndex" value="@i" />
+
+                                <label style="white-space: nowrap;">Action:</label>
+                                <select name="ActionType">
+                                    @foreach (var action in player.Abilities)
+                                    {
+                                        <option value="@action">@action</option>
+                                    }
+                                </select>
+
+                                <label style="white-space: nowrap;">Target:</label>
+                                <select name="TargetIndex">
+                                    @if (player.Abilities.Contains("Heal"))
+                                    {
+                                        @for (int j = 0; j < Model.Players.Count; j++)
+                                        {
+                                            if (Model.Players[j].Health > 0)
+                                            {
+                                                <option value="@j">@Model.Players[j].Name</option>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @for (int j = 0; j < Model.Enemies.Count; j++)
+                                        {
+                                            if (Model.Enemies[j].Health > 0)
+                                            {
+                                                <option value="@j">@Model.Enemies[j].Name</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+
+                                <button type="submit" name="performAction" value="1">Perform</button>
+                            </form>
+                        }
+                        else if (hasActed)
+                        {
+                            <em style="color: gray;">Already acted</em>
+                        }
+                        else if (!isAlive)
+                        {
+                            <em style="color: red;">Defeated</em>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="side">
+            @foreach (var enemy in Model.Enemies)
+            {
+                <div class="character-card">
+                    <img src="@enemy.ImagePath" alt="@enemy.Name" width="50" height="50" />
+                    <div class="character-info">
+                        <strong>@enemy.Name</strong>
+                        <span>HP: @enemy.Health</span>
+                        <span>Mana: @enemy.Mana</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="battle-log">
+        <h2>Battle Log</h2>
+        <ul>
+            @foreach (var log in Model.BattleLog.AsEnumerable().Reverse())
+            {
+                <li>@log</li>
+            }
+        </ul>
+
+    </div>
+</div>
+
+<form method="post" style="margin-top: 1em;">
+    <button type="submit" name="retryBattle" value="1">Retry Battle</button>
+</form>
+
+
+<style>
+    .battle-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2em;
+        gap: 2em;
+    }
+
+    .battle-left {
+        width: 70%;
+        display: flex;
+        gap: 2em;
+    }
+
+    .side {
+        width: 50%;
+    }
+
+    .character-card {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+    }
+
+        .character-card img {
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+
+    .character-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .actions-form {
+        margin-top: 2em;
+        padding: 1em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #eef2f7;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+        text-align: center;
+    }
+
+    h2 {
+        margin-top: 1.5em;
+    }
+
+    .battle-log {
+        width: 28%;
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 1em;
+        background-color: #f2f2f2;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+</style>
