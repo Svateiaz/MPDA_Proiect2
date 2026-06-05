@@ -28,14 +28,14 @@ jobs:
     - name: 2. Run Unit Tests
       run: dotnet test --no-build --verbosity normal --configuration Release
 
-    - name: 3. Static Code Analysis (Linting)
+    - name: 3. Static Code Analysis
       run: dotnet format --verify-no-changes
       continue-on-error: true 
 
-    - name: 4. Publish Application (Prepare for deployment)
+    - name: 4. Publish
       run: dotnet publish MPDA_Proiect2/MPDA_Proiect2.csproj -c Release -o ./deployment_drop
 
-    - name: 5. Deploy / Upload Artifact
+    - name: 5. Deploy 
       uses: actions/upload-artifact@v4
       with:
         name: WebApp-Release
